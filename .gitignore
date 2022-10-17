@@ -1,3 +1,16 @@
+.project
+.settings
+.classpath
+.factorypath
+.idea
+*.iml
+MANIFEST.MF
+target
+/META-INF/
+jacoco.exec
+/settings.xml
+*.iml
+*.idea
 # Compiled class file
 *.class
 

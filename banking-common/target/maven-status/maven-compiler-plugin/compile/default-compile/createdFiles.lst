@@ -1,0 +1,4 @@
+org/example/network/common/domain/Report.class
+org/example/network/common/domain/Account.class
+org/example/network/common/domain/Currency.class
+org/example/network/common/domain/Transaction.class

@@ -1,0 +1,14 @@
+account:
+  datasources:
+    routing:
+      url: jdbc:postgresql://localhost:5432/test
+      user: test
+      password: test
+    account-shard-1:
+      url: jdbc:postgresql://localhost:5432/test
+      user: test
+      password: test
+    account-shard-2:
+      url: jdbc:postgresql://localhost:5432/test
+      user: test
+      password: test
