@@ -7,8 +7,6 @@ import java.util.List;
 
 public interface ReportRepository {
 
-    List<TransferEntity> findAllByAccountNumber(String accountNumber);
-
     List<ReportEntity> getUnfinishedRequests();
 
     ReportEntity getReportAndChangeUpdateTime(ReportEntity report);

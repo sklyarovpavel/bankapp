@@ -12,22 +12,24 @@ import org.example.network.account.report.model.entity.TransferEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
 public class DefaultReportService implements ReportService {
 
-    private final  ReportRepository reportRepository;
+    private final ReportRepository reportRepository;
 
     private final TransferRepository transferRepository;
 
     @Override
     public void save(MoneyTransfer moneyTransfer) {
-        TransferEntity transferEntity = new TransferEntity();
-        transferEntity.setAmount(moneyTransfer.getAmount());
-        transferEntity.setId(moneyTransfer.getId());
-        transferEntity.setAccountId(moneyTransfer.getId());
+        TransferEntity transferEntity = TransferEntity.builder()
+                .amount(moneyTransfer.getAmount())
+                .id(moneyTransfer.getId())
+                .accountId(moneyTransfer.getId())
+                .build();
         transferRepository.saveTransfer(transferEntity);
     }
 
@@ -40,8 +42,8 @@ public class DefaultReportService implements ReportService {
     public String createReport(String accountId) {
         ReportEntity reportEntity = ReportEntity.builder()
                 .reportStatus(ReportStatus.NOT_YET_READY)
-                .creationTime(OffsetDateTime.now())
-                .updateTime(OffsetDateTime.MIN)
+                .creationTime(new Date())
+                .updateTime(new Date(0))
                 .accountNumber(accountId)
                 .id(UUID.randomUUID().toString())
                 .build();
@@ -55,7 +57,7 @@ public class DefaultReportService implements ReportService {
         for (ReportEntity entity : unfinishedRequests) {
             ReportEntity updated = reportRepository.getReportAndChangeUpdateTime(entity);
             if (updated != null) {
-                List<TransferEntity> transfers = transferRepository.findAllByAccountNumber(entity.getAccountNumber());
+                List<TransferEntity> transfers = transferRepository.findAllByAccountId(entity.getAccountNumber());
                 updated.setTransferList(transfers);
                 updated.setReportStatus(ReportStatus.READY);
                 reportRepository.save(updated);

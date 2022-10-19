@@ -7,24 +7,27 @@ import org.example.network.account.report.configuration.ReportApplicationConfigu
 import org.example.network.account.report.model.dto.ReportStatus;
 import org.example.network.account.report.model.entity.ReportEntity;
 import org.example.network.account.report.model.entity.TransferEntity;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 
 @RequiredArgsConstructor
 public class MongoReportRepository implements ReportRepository, TransferRepository {
 
+    public static final FindAndModifyOptions RETURN_NEW = FindAndModifyOptions.options().returnNew(true);
     private final MongoTemplate mongoTemplate;
 
     private final ReportApplicationConfigurationProperties configurationProperties;
 
     @Override
-    public List<TransferEntity> findAllByAccountNumber(String accountNumber) {
-        Criteria criteria = new Criteria("accountNumber").is(accountNumber);
+    public List<TransferEntity> findAllByAccountId(String accountId) {
+        Criteria criteria = new Criteria("accountId").is(accountId);
         return mongoTemplate.find(new Query(criteria), TransferEntity.class);
     }
 
@@ -41,11 +44,12 @@ public class MongoReportRepository implements ReportRepository, TransferReposito
 
     @Override
     public ReportEntity getReportAndChangeUpdateTime(ReportEntity report) {
+        OffsetDateTime timeCondition = OffsetDateTime.now().minusMinutes(configurationProperties.getReportProcessingTimeoutInMinutes());
         Criteria criteria = new Criteria("id").is(report.getId()).and("updateTime")
-                .gte(OffsetDateTime.now().minusMinutes(configurationProperties.getReportProcessingTimeoutInMinutes()));
+                .lte(Date.from(timeCondition.toInstant()));
         Update update = new Update();
-        update.set("updateTime", OffsetDateTime.now());
-        return mongoTemplate.findAndModify(new Query(criteria), update, ReportEntity.class);
+        update.set("updateTime", new Date());
+        return mongoTemplate.findAndModify(new Query(criteria), update, RETURN_NEW, ReportEntity.class);
     }
 
     @Override
@@ -60,10 +64,11 @@ public class MongoReportRepository implements ReportRepository, TransferReposito
 
     @Override
     public void deleteOld() {
+        OffsetDateTime timeCondition = OffsetDateTime.now().minusDays(configurationProperties.getReportCleanupTimeoutInDays());
         Criteria criteria = new Criteria("reportStatus")
                 .is(ReportStatus.READY)
                 .and("updateTime")
-                .lte(OffsetDateTime.now().minusDays(configurationProperties.getReportCleanupTimeoutInDays()));
+                .lte(Date.from(timeCondition.toInstant()));
         mongoTemplate.remove(new Query(criteria), ReportEntity.class);
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.OffsetDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Document
@@ -24,9 +25,9 @@ public class ReportEntity {
     @Version
     private int version;
 
-    private OffsetDateTime creationTime;
+    private Date creationTime;
 
-    private OffsetDateTime updateTime;
+    private Date updateTime;
 
     private List<TransferEntity> transferList;
 
